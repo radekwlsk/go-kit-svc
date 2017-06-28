@@ -66,7 +66,7 @@ func (mw instrumentingMiddleware) TitleCase(s string) (output string, err error)
 }
 
 func (mw instrumentingMiddleware) RemoveWhitespace(s string) (output string, err error) {
-	var removed int
+	var removed *int
 	defer func(begin time.Time) {
 		lvs := []string{"method", "remove_whitespace", "error", fmt.Sprint(err != nil)}
 		mw.requestCount.With(lvs...).Add(1)
@@ -75,7 +75,7 @@ func (mw instrumentingMiddleware) RemoveWhitespace(s string) (output string, err
 	}(time.Now())
 
 	output, err = mw.next.RemoveWhitespace(s)
-	removed = len(s) - len(output)
+	removed = &(len(s) - len(output))
 	return
 }
 
