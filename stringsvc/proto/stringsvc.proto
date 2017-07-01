@@ -1,0 +1,34 @@
+syntax = "proto3";
+package proto;
+
+service  String {
+    rpc TitleCase (TitleCaseRequest) returns (TitleCaseResponse) {}
+    rpc RemoveWhitespace (RemoveWhitespaceRequest) returns (RemoveWhitespaceResponse) {}
+    rpc Count (CountRequest) returns (CountResponse) {}
+}
+
+message TitleCaseRequest {
+    string s = 1;
+}
+
+message TitleCaseResponse {
+    string v = 1;
+    string err = 2;
+}
+
+message RemoveWhitespaceRequest {
+    string s = 1;
+}
+
+message RemoveWhitespaceResponse {
+    string v = 1;
+    string err = 2;
+}
+
+message CountRequest {
+    string s = 1;
+}
+
+message CountResponse {
+    int64 v = 1;
+}
