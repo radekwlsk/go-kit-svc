@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"time"
 
+	"context"
+
 	"github.com/go-kit/kit/metrics"
 	kitprometheus "github.com/go-kit/kit/metrics/prometheus"
 	stdprometheus "github.com/prometheus/client_golang/prometheus"
@@ -54,19 +56,19 @@ func NewInstrumentingMiddleware(svc StringService) StringService {
 	}
 }
 
-func (mw instrumentingMiddleware) TitleCase(s string) (output string, err error) {
+func (mw instrumentingMiddleware) TitleCase(ctx context.Context, s string) (output string, err error) {
 	defer func(begin time.Time) {
 		lvs := []string{"method", "title_case", "error", fmt.Sprint(err != nil)}
 		mw.requestCount.With(lvs...).Add(1)
 		mw.requestLatency.With(lvs...).Observe(time.Since(begin).Seconds())
 	}(time.Now())
 
-	output, err = mw.next.TitleCase(s)
+	output, err = mw.next.TitleCase(ctx, s)
 	return
 }
 
-func (mw instrumentingMiddleware) RemoveWhitespace(s string) (output string, err error) {
-	var removed *int
+func (mw instrumentingMiddleware) RemoveWhitespace(ctx context.Context, s string) (output string, err error) {
+	var removed int
 	defer func(begin time.Time) {
 		lvs := []string{"method", "remove_whitespace", "error", fmt.Sprint(err != nil)}
 		mw.requestCount.With(lvs...).Add(1)
@@ -74,12 +76,12 @@ func (mw instrumentingMiddleware) RemoveWhitespace(s string) (output string, err
 		mw.charsRemoved.Observe(float64(removed))
 	}(time.Now())
 
-	output, err = mw.next.RemoveWhitespace(s)
-	removed = &(len(s) - len(output))
+	output, err = mw.next.RemoveWhitespace(ctx, s)
+	removed = len(s) - len(output)
 	return
 }
 
-func (mw instrumentingMiddleware) Count(s string) (n int) {
+func (mw instrumentingMiddleware) Count(ctx context.Context, s string) (n int) {
 	defer func(begin time.Time) {
 		lvs := []string{"method", "count", "error", "false"}
 		mw.requestCount.With(lvs...).Add(1)
@@ -87,6 +89,6 @@ func (mw instrumentingMiddleware) Count(s string) (n int) {
 		mw.countResult.Observe(float64(n))
 	}(time.Now())
 
-	n = mw.next.Count(s)
+	n = mw.next.Count(ctx, s)
 	return
 }

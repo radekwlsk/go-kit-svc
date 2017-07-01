@@ -67,29 +67,3 @@ func DecodeCountRequest(_ context.Context, r *http.Request) (interface{}, error)
 func EncodeResponse(_ context.Context, w http.ResponseWriter, response interface{}) error {
 	return json.NewEncoder(w).Encode(response)
 }
-
-type titleCaseRequest struct {
-	S string `json:"s"`
-}
-
-type titleCaseResponse struct {
-	V   string `json:"v"`
-	Err string `json:"err,omitempty"`
-}
-
-type removeWhitespaceRequest struct {
-	S string `json:"s"`
-}
-
-type removeWhitespaceResponse struct {
-	V   string `json:"v"`
-	Err string `json:"err,omitempty"`
-}
-
-type countRequest struct {
-	S string `json:"s"`
-}
-
-type countResponse struct {
-	V int `json:"v"`
-}

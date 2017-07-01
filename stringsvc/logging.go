@@ -3,6 +3,8 @@ package stringsvc
 import (
 	"time"
 
+	"context"
+
 	"github.com/go-kit/kit/log"
 )
 
@@ -15,7 +17,7 @@ func NewLoggingMiddleware(svc StringService, logger log.Logger) StringService {
 	return loggingMiddleware{logger, svc}
 }
 
-func (mw loggingMiddleware) TitleCase(s string) (output string, err error) {
+func (mw loggingMiddleware) TitleCase(ctx context.Context, s string) (output string, err error) {
 	defer func(begin time.Time) {
 		mw.logger.Log(
 			"method", "title_case",
@@ -26,11 +28,11 @@ func (mw loggingMiddleware) TitleCase(s string) (output string, err error) {
 		)
 	}(time.Now())
 
-	output, err = mw.next.TitleCase(s)
+	output, err = mw.next.TitleCase(ctx, s)
 	return
 }
 
-func (mw loggingMiddleware) RemoveWhitespace(s string) (output string, err error) {
+func (mw loggingMiddleware) RemoveWhitespace(ctx context.Context, s string) (output string, err error) {
 	defer func(begin time.Time) {
 		mw.logger.Log(
 			"method", "remove_whitespace",
@@ -41,11 +43,11 @@ func (mw loggingMiddleware) RemoveWhitespace(s string) (output string, err error
 		)
 	}(time.Now())
 
-	output, err = mw.next.RemoveWhitespace(s)
+	output, err = mw.next.RemoveWhitespace(ctx, s)
 	return
 }
 
-func (mw loggingMiddleware) Count(s string) (n int) {
+func (mw loggingMiddleware) Count(ctx context.Context, s string) (n int) {
 	defer func(begin time.Time) {
 		mw.logger.Log(
 			"method", "count",
@@ -55,6 +57,6 @@ func (mw loggingMiddleware) Count(s string) (n int) {
 		)
 	}(time.Now())
 
-	n = mw.next.Count(s)
+	n = mw.next.Count(ctx, s)
 	return
 }

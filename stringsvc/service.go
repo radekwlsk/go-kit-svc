@@ -1,6 +1,7 @@
 package stringsvc
 
 import (
+	"context"
 	"errors"
 	"strings"
 	"unicode"
@@ -8,9 +9,9 @@ import (
 
 // StringService provides operations on strings
 type StringService interface {
-	TitleCase(string) (string, error)
-	RemoveWhitespace(string) (string, error)
-	Count(string) int
+	TitleCase(context.Context, string) (string, error)
+	RemoveWhitespace(context.Context, string) (string, error)
+	Count(context.Context, string) int
 }
 
 type stringService struct{}
@@ -21,14 +22,14 @@ func New() StringService {
 
 var ErrEmptyString = errors.New("empty string")
 
-func (stringService) TitleCase(s string) (string, error) {
+func (stringService) TitleCase(_ context.Context, s string) (string, error) {
 	if s == "" {
 		return "", ErrEmptyString
 	}
 	return strings.Title(s), nil
 }
 
-func (stringService) RemoveWhitespace(s string) (string, error) {
+func (stringService) RemoveWhitespace(_ context.Context, s string) (string, error) {
 	if s == "" {
 		return "", ErrEmptyString
 	}
@@ -40,6 +41,6 @@ func (stringService) RemoveWhitespace(s string) (string, error) {
 	}, s), nil
 }
 
-func (stringService) Count(s string) int {
+func (stringService) Count(_ context.Context, s string) int {
 	return len(s)
 }

@@ -1,11 +1,17 @@
 package main
 
 import (
+	"fmt"
+	"net"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"./stringsvc"
+	"./stringsvc/proto"
 	"github.com/go-kit/kit/log"
+	"google.golang.org/grpc"
 )
 
 func main() {
@@ -31,9 +37,38 @@ func main() {
 		CountEndpoint:            stringsvc.MakeCountEndpoint(svc),
 	}
 
-	logger = log.With(logger, "transport", "HTTP")
-	logger.Log("msg", "HTTP", "addr", ":8080")
+	errc := make(chan error)
 
-	handler := stringsvc.MakeHTTPHandler(endpoints, logger)
-	http.ListenAndServe(":8080", handler)
+	go func() {
+		logger := log.With(logger, "transport", "HTTP")
+		logger.Log("addr", ":8080")
+
+		handler := stringsvc.MakeHTTPHandler(endpoints, logger)
+		errc <- http.ListenAndServe(":8080", handler)
+	}()
+
+	go func() {
+		logger := log.With(logger, "transport", "gRPC")
+		logger.Log("addr", ":8081")
+
+		ln, err := net.Listen("tcp", ":8081")
+		if err != nil {
+			errc <- err
+			return
+		}
+
+		srv := stringsvc.MakeGRPCServer(endpoints, logger)
+		s := grpc.NewServer()
+		proto.RegisterStringServer(s, srv)
+		errc <- s.Serve(ln)
+	}()
+
+	go func() {
+		c := make(chan os.Signal, 1)
+		signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
+		errc <- fmt.Errorf("%s", <-c)
+	}()
+
+	// Run!
+	logger.Log("exit", <-errc)
 }
