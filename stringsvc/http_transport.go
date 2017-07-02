@@ -8,6 +8,9 @@ import (
 	"github.com/go-kit/kit/log"
 	httptransport "github.com/go-kit/kit/transport/http"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"bytes"
+	"io/ioutil"
+	"errors"
 )
 
 func MakeHTTPHandler(endpoints Endpoints, logger log.Logger) http.Handler {
@@ -18,29 +21,29 @@ func MakeHTTPHandler(endpoints Endpoints, logger log.Logger) http.Handler {
 	m.Handle("/tc",
 		httptransport.NewServer(
 			endpoints.TitleCaseEndpoint,
-			DecodeTitleCaseRequest,
-			EncodeResponse,
+			DecodeHTTPTitleCaseRequest,
+			EncodeHTTPResponse,
 			options...,
 		))
 	m.Handle("/rw",
 		httptransport.NewServer(
 			endpoints.RemoveWhitespaceEndpoint,
-			DecodeRemoveWhitespaceRequest,
-			EncodeResponse,
+			DecodeHTTPRemoveWhitespaceRequest,
+			EncodeHTTPResponse,
 			options...,
 		))
 	m.Handle("/c",
 		httptransport.NewServer(
 			endpoints.CountEndpoint,
-			DecodeCountRequest,
-			EncodeResponse,
+			DecodeHTTPCountRequest,
+			EncodeHTTPResponse,
 			options...,
 		))
 	m.Handle("/metrics", promhttp.Handler())
 	return m
 }
 
-func DecodeTitleCaseRequest(_ context.Context, r *http.Request) (interface{}, error) {
+func DecodeHTTPTitleCaseRequest(_ context.Context, r *http.Request) (interface{}, error) {
 	var request titleCaseRequest
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		return nil, err
@@ -48,7 +51,7 @@ func DecodeTitleCaseRequest(_ context.Context, r *http.Request) (interface{}, er
 	return request, nil
 }
 
-func DecodeRemoveWhitespaceRequest(_ context.Context, r *http.Request) (interface{}, error) {
+func DecodeHTTPRemoveWhitespaceRequest(_ context.Context, r *http.Request) (interface{}, error) {
 	var request removeWhitespaceRequest
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		return nil, err
@@ -56,7 +59,7 @@ func DecodeRemoveWhitespaceRequest(_ context.Context, r *http.Request) (interfac
 	return request, nil
 }
 
-func DecodeCountRequest(_ context.Context, r *http.Request) (interface{}, error) {
+func DecodeHTTPCountRequest(_ context.Context, r *http.Request) (interface{}, error) {
 	var request countRequest
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		return nil, err
@@ -64,6 +67,54 @@ func DecodeCountRequest(_ context.Context, r *http.Request) (interface{}, error)
 	return request, nil
 }
 
-func EncodeResponse(_ context.Context, w http.ResponseWriter, response interface{}) error {
+func DecodeHTTPTitleCaseResponse(_ context.Context, r *http.Response) (interface{}, error) {
+	if r.StatusCode != http.StatusOK {
+		return nil, errorDecoder(r)
+	}
+	var resp titleCaseResponse
+	err := json.NewDecoder(r.Body).Decode(&resp)
+	return resp, err
+}
+
+func DecodeHTTPRemoveWhitespaceResponse(_ context.Context, r *http.Response) (interface{}, error) {
+	if r.StatusCode != http.StatusOK {
+		return nil, errorDecoder(r)
+	}
+	var resp removeWhitespaceResponse
+	err := json.NewDecoder(r.Body).Decode(&resp)
+	return resp, err
+}
+
+func DecodeHTTPCountResponse(_ context.Context, r *http.Response) (interface{}, error) {
+	if r.StatusCode != http.StatusOK {
+		return nil, errorDecoder(r)
+	}
+	var resp countResponse
+	err := json.NewDecoder(r.Body).Decode(&resp)
+	return resp, err
+}
+
+func EncodeHTTPRequest(_ context.Context, r *http.Request, request interface{}) error {
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(request); err != nil {
+		return err
+	}
+	r.Body = ioutil.NopCloser(&buf)
+	return nil
+}
+
+func EncodeHTTPResponse(_ context.Context, w http.ResponseWriter, response interface{}) error {
 	return json.NewEncoder(w).Encode(response)
+}
+
+func errorDecoder(r *http.Response) error {
+	var w errorWrapper
+	if err := json.NewDecoder(r.Body).Decode(&w); err != nil {
+		return err
+	}
+	return errors.New(w.Error)
+}
+
+type errorWrapper struct {
+	Error string `json:"error"`
 }
