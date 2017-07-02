@@ -1,4 +1,4 @@
-package client
+package grpc
 
 import (
 	"github.com/afrometal/go-kit-svc/stringsvc"
