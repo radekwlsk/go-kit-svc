@@ -15,7 +15,6 @@ import (
 )
 
 func MakeHTTPHandler(endpoints Endpoints, logger log.Logger) http.Handler {
-	logger = log.With(logger, "transport", "HTTP")
 	options := []httptransport.ServerOption{
 		httptransport.ServerErrorLogger(logger),
 	}
