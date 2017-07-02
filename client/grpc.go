@@ -1,8 +1,8 @@
 package client
 
 import (
-	"../stringsvc"
-	"../stringsvc/proto"
+	"github.com/afrometal/go-kit-svc/stringsvc"
+	"github.com/afrometal/go-kit-svc/stringsvc/proto"
 	grpctransport "github.com/go-kit/kit/transport/grpc"
 	"google.golang.org/grpc"
 )

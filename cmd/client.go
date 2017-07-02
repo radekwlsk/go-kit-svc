@@ -7,10 +7,12 @@ import (
 	"log"
 	"time"
 
-	grpcClient "../client"
-	"../stringsvc"
+	grpcClient "github.com/afrometal/go-kit-svc/client"
+	"github.com/afrometal/go-kit-svc/stringsvc"
 	"google.golang.org/grpc"
 )
+
+// TODO: html client
 
 func main() {
 	var (

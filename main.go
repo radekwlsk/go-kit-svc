@@ -8,8 +8,8 @@ import (
 	"os/signal"
 	"syscall"
 
-	"./stringsvc"
-	"./stringsvc/proto"
+	"github.com/afrometal/go-kit-svc/stringsvc"
+	"github.com/afrometal/go-kit-svc/stringsvc/proto"
 	"github.com/go-kit/kit/log"
 	"google.golang.org/grpc"
 )

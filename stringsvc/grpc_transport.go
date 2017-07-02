@@ -3,7 +3,7 @@ package stringsvc
 import (
 	"context"
 
-	"./proto"
+	"github.com/afrometal/go-kit-svc/stringsvc/proto"
 	"github.com/go-kit/kit/log"
 	grpctransport "github.com/go-kit/kit/transport/grpc"
 	oldcontext "golang.org/x/net/context"
