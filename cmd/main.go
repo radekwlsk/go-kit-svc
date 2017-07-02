@@ -7,29 +7,37 @@ import (
 	"log"
 	"time"
 
-	grpcClient "github.com/afrometal/go-kit-svc/client"
+	grpcclient "github.com/afrometal/go-kit-svc/client/grpc"
+	httpclient "github.com/afrometal/go-kit-svc/client/http"
 	"github.com/afrometal/go-kit-svc/stringsvc"
 	"google.golang.org/grpc"
 )
 
-// TODO: html client
-
 func main() {
 	var (
-		grpcAddr = flag.String("addr", ":8081",
+		httpAddr = flag.String("http-addr", "",
+			"HTTP address")
+		grpcAddr = flag.String("grpc-addr", "",
 			"gRPC address")
 	)
 	flag.Parse()
-	ctx := context.Background()
-	conn, err := grpc.Dial(*grpcAddr, grpc.WithInsecure(),
-		grpc.WithTimeout(1*time.Second))
 
-	if err != nil {
-		log.Fatalln("gRPC dial:", err)
+	var stringService stringsvc.StringService
+
+	if *httpAddr != "" {
+		stringService = httpclient.New(*httpAddr)
+	} else if *grpcAddr != "" {
+		conn, err := grpc.Dial(*grpcAddr, grpc.WithInsecure(),
+			grpc.WithTimeout(time.Second))
+
+		if err != nil {
+			log.Fatalln("gRPC dial error:", err)
+		}
+		defer conn.Close()
+
+		stringService = grpcclient.New(conn)
 	}
-	defer conn.Close()
 
-	stringService := grpcClient.New(conn)
 	args := flag.Args()
 	var cmd string
 
@@ -39,15 +47,15 @@ func main() {
 		case "tc":
 			var s string
 			s, args = pop(args)
-			titleCase(ctx, stringService, s)
+			titleCase(context.Background(), stringService, s)
 		case "rw":
 			var s string
 			s, args = pop(args)
-			removeWhitespace(ctx, stringService, s)
+			removeWhitespace(context.Background(), stringService, s)
 		case "c":
 			var s string
 			s, args = pop(args)
-			count(ctx, stringService, s)
+			count(context.Background(), stringService, s)
 		default:
 			log.Fatalln("unknown command", cmd)
 		}
