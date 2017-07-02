@@ -8,6 +8,8 @@ import (
 	"os/signal"
 	"syscall"
 
+	"flag"
+
 	"github.com/afrometal/go-kit-svc/stringsvc"
 	"github.com/afrometal/go-kit-svc/stringsvc/proto"
 	"github.com/go-kit/kit/log"
@@ -15,6 +17,13 @@ import (
 )
 
 func main() {
+	var (
+		httpAddr = flag.String("http-addr", ":8080",
+			"HTTP address")
+		grpcAddr = flag.String("grpc-addr", ":8081",
+			"gRPC address")
+	)
+	flag.Parse()
 	// Logging domain.
 	var logger log.Logger
 	{
@@ -26,32 +35,36 @@ func main() {
 	defer logger.Log("msg", "goodbye")
 
 	var svc stringsvc.StringService
-	svc = stringsvc.New()
-	svc = stringsvc.NewLoggingMiddleware(svc, logger)
-	svc = stringsvc.NewInstrumentingMiddleware(svc)
-
+	{
+		svc = stringsvc.New()
+		svc = stringsvc.NewLoggingMiddleware(svc, logger)
+		svc = stringsvc.NewInstrumentingMiddleware(svc)
+	}
+	
 	var endpoints stringsvc.Endpoints
-	endpoints = stringsvc.Endpoints{
-		TitleCaseEndpoint:        stringsvc.MakeTitleCaseEndpoint(svc),
-		RemoveWhitespaceEndpoint: stringsvc.MakeRemoveWhitespaceEndpoint(svc),
-		CountEndpoint:            stringsvc.MakeCountEndpoint(svc),
+	{
+		endpoints = stringsvc.Endpoints{
+			TitleCaseEndpoint:        stringsvc.MakeTitleCaseEndpoint(svc),
+			RemoveWhitespaceEndpoint: stringsvc.MakeRemoveWhitespaceEndpoint(svc),
+			CountEndpoint:            stringsvc.MakeCountEndpoint(svc),
+		}
 	}
 
 	errc := make(chan error)
 
 	go func() {
 		logger := log.With(logger, "transport", "HTTP")
-		logger.Log("addr", ":8080")
+		logger.Log("addr", *httpAddr)
 
 		handler := stringsvc.MakeHTTPHandler(endpoints, logger)
-		errc <- http.ListenAndServe(":8080", handler)
+		errc <- http.ListenAndServe(*httpAddr, handler)
 	}()
 
 	go func() {
 		logger := log.With(logger, "transport", "gRPC")
-		logger.Log("addr", ":8081")
+		logger.Log("addr", *grpcAddr)
 
-		ln, err := net.Listen("tcp", ":8081")
+		ln, err := net.Listen("tcp", *grpcAddr)
 		if err != nil {
 			errc <- err
 			return
