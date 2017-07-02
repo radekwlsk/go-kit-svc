@@ -1,7 +1,6 @@
 package html
 
 import (
-	"log"
 	"net/url"
 	"strings"
 
@@ -9,7 +8,7 @@ import (
 	httptransport "github.com/go-kit/kit/transport/http"
 )
 
-func New(instance string, logger log.Logger) stringsvc.StringService {
+func New(instance string) stringsvc.StringService {
 	if !strings.HasPrefix(instance, "http") {
 		instance = "http://" + instance
 	}
