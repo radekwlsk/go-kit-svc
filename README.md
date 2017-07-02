@@ -29,15 +29,24 @@ $ curl -XPOST -d'{"s":"hello, world!"}' localhost:8080/c
 
 Or gRPC client can be run:
 ```bash
-$ go run cmd/client.go tc "hello, world!" rw "hello,   world!" c "hello, world!"
+$ go run cmd/client.go -http-addr="localhost:8080" tc "hello, world!" rw "hello,   world!" c "hello, world!"
+Hello, World!
+hello,world!
+13
+
+$ go run cmd/client.go -grpc-addr="8081" tc "hello, world!" rw "hello,   world!" c "hello, world!"
 Hello, World!
 hello,world!
 13
 ```
-program arguments are in form `cmd str cmd str cmd str ...` where `cmd` can be:
+program arguments are in form `flags cmd str cmd str cmd str ...` where `cmd` can be:
 
 - `tc` for `StringService.TitleCase(...)`
 - `rw` for `StringService.RemoveWhitespace(...)`
 - `c` for `StringService.Count(...)`
 
 and `str` can be any string that will be argument of command.
+
+Flags are:
+- `-http-addr` HTTP address (default `:8080`)
+- `-grpc-addr` gRPC address (default `:8081`)
