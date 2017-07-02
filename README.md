@@ -1,6 +1,6 @@
 # String Service
 
-Microservice training using Go, [go-kit](https://gokit.io/) toolkit and [gRPC](http://www.grpc.io/) RPC framework for message transport.
+Microservice training using Go, [go-kit](https://gokit.io/) toolkit and [gRPC](http://www.grpc.io/) RPC framework for message transport (together with [protobuf](https://github.com/google/protobuf) data interchange format).
 
 Based on [go-kit examples](https://gokit.io/examples/):
 - [stringsvc](https://gokit.io/examples/stringsvc.html)
