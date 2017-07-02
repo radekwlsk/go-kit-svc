@@ -5,15 +5,17 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"bytes"
+	"errors"
+	"io/ioutil"
+
 	"github.com/go-kit/kit/log"
 	httptransport "github.com/go-kit/kit/transport/http"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"bytes"
-	"io/ioutil"
-	"errors"
 )
 
 func MakeHTTPHandler(endpoints Endpoints, logger log.Logger) http.Handler {
+	logger = log.With(logger, "transport", "HTTP")
 	options := []httptransport.ServerOption{
 		httptransport.ServerErrorLogger(logger),
 	}
