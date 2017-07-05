@@ -1,5 +1,8 @@
 package stringsvc
 
+// Server-side bindings for the HTTP transport.
+// It utilizes the transport/http.Server.
+
 import (
 	"context"
 	"encoding/json"
@@ -14,6 +17,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
+// MakeHTTPHandler returns a handler that makes a set of endpoints available
+// on predefined paths.
 func MakeHTTPHandler(endpoints Endpoints, logger log.Logger) http.Handler {
 	options := []httptransport.ServerOption{
 		httptransport.ServerErrorLogger(logger),
@@ -44,6 +49,9 @@ func MakeHTTPHandler(endpoints Endpoints, logger log.Logger) http.Handler {
 	return m
 }
 
+// DecodeHTTPTitleCaseRequest is a transport/http.DecodeRequestFunc that decodes a
+// JSON-encoded request from the HTTP request body.
+// Useful in a server.
 func DecodeHTTPTitleCaseRequest(_ context.Context, r *http.Request) (interface{}, error) {
 	var request titleCaseRequest
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
@@ -52,6 +60,9 @@ func DecodeHTTPTitleCaseRequest(_ context.Context, r *http.Request) (interface{}
 	return request, nil
 }
 
+// DecodeHTTPRemoveWhitespaceRequest is a transport/http.DecodeRequestFunc that decodes a
+// JSON-encoded request from the HTTP request body.
+// Useful in a server.
 func DecodeHTTPRemoveWhitespaceRequest(_ context.Context, r *http.Request) (interface{}, error) {
 	var request removeWhitespaceRequest
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
@@ -60,6 +71,9 @@ func DecodeHTTPRemoveWhitespaceRequest(_ context.Context, r *http.Request) (inte
 	return request, nil
 }
 
+// DecodeHTTPCountRequest is a transport/http.DecodeRequestFunc that decodes a
+// JSON-encoded request from the HTTP request body.
+// Useful in a server.
 func DecodeHTTPCountRequest(_ context.Context, r *http.Request) (interface{}, error) {
 	var request countRequest
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
@@ -68,6 +82,10 @@ func DecodeHTTPCountRequest(_ context.Context, r *http.Request) (interface{}, er
 	return request, nil
 }
 
+// DecodeHTTPTitleCaseResponse is a transport/http.DecodeResponseFunc that decodes a
+// JSON-encoded response from the HTTP response body. For non-200 status code response
+// an error message decoding attempt is made on response body.
+// Useful in a client.
 func DecodeHTTPTitleCaseResponse(_ context.Context, r *http.Response) (interface{}, error) {
 	if r.StatusCode != http.StatusOK {
 		return nil, errorDecoder(r)
@@ -77,6 +95,10 @@ func DecodeHTTPTitleCaseResponse(_ context.Context, r *http.Response) (interface
 	return resp, err
 }
 
+// DecodeHTTPRemoveWhitespaceResponse is a transport/http.DecodeResponseFunc that decodes a
+// JSON-encoded response from the HTTP response body. For non-200 status code response
+// an error message decoding attempt is made on response body.
+// Useful in a client.
 func DecodeHTTPRemoveWhitespaceResponse(_ context.Context, r *http.Response) (interface{}, error) {
 	if r.StatusCode != http.StatusOK {
 		return nil, errorDecoder(r)
@@ -86,6 +108,10 @@ func DecodeHTTPRemoveWhitespaceResponse(_ context.Context, r *http.Response) (in
 	return resp, err
 }
 
+// DecodeHTTPCountResponse is a transport/http.DecodeResponseFunc that decodes a
+// JSON-encoded response from the HTTP response body. For non-200 status code response
+// an error message decoding attempt is made on response body.
+// Useful in a client.
 func DecodeHTTPCountResponse(_ context.Context, r *http.Response) (interface{}, error) {
 	if r.StatusCode != http.StatusOK {
 		return nil, errorDecoder(r)
@@ -95,6 +121,9 @@ func DecodeHTTPCountResponse(_ context.Context, r *http.Response) (interface{}, 
 	return resp, err
 }
 
+// EncodeHTTPRequest is a transport/http.EncodeRequestFunc that JSON-encodes any
+// request to the request body.
+// Useful in a client.
 func EncodeHTTPRequest(_ context.Context, r *http.Request, request interface{}) error {
 	var buf bytes.Buffer
 	if err := json.NewEncoder(&buf).Encode(request); err != nil {
@@ -104,6 +133,9 @@ func EncodeHTTPRequest(_ context.Context, r *http.Request, request interface{}) 
 	return nil
 }
 
+// EncodeHTTPResponse is a transport/http.EncodeResponseFunc that encodes the response
+// as JSON to the response writer.
+// Useful in a server.
 func EncodeHTTPResponse(_ context.Context, w http.ResponseWriter, response interface{}) error {
 	return json.NewEncoder(w).Encode(response)
 }

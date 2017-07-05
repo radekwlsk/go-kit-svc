@@ -13,6 +13,9 @@ type loggingMiddleware struct {
 	next   StringService
 }
 
+// NewLoggingMiddleware returns StringService middleware that logs
+// information about each method execution including:
+// method name, input, output, error if present and time of execution
 func NewLoggingMiddleware(svc StringService, logger log.Logger) StringService {
 	return loggingMiddleware{logger, svc}
 }

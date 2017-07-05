@@ -22,6 +22,9 @@ func main() {
 	)
 	flag.Parse()
 
+	// This client supports both HTTP and gRPC transports.
+	// Only one should be needed in production.
+
 	var stringService stringsvc.StringService
 
 	if *httpAddr != "" {

@@ -24,6 +24,7 @@ func main() {
 			"gRPC address")
 	)
 	flag.Parse()
+
 	// Logging domain.
 	var logger log.Logger
 	{
@@ -34,13 +35,15 @@ func main() {
 	logger.Log("msg", "hello")
 	defer logger.Log("msg", "goodbye")
 
+	// Business domain.
 	var svc stringsvc.StringService
 	{
 		svc = stringsvc.New()
 		svc = stringsvc.NewLoggingMiddleware(svc, logger)
 		svc = stringsvc.NewInstrumentingMiddleware(svc)
 	}
-	
+
+	// Endpoint domain.
 	var endpoints stringsvc.Endpoints
 	{
 		endpoints = stringsvc.Endpoints{
@@ -50,8 +53,17 @@ func main() {
 		}
 	}
 
+	// Error channel.
 	errc := make(chan error)
 
+	// Interrupt handler.
+	go func() {
+		c := make(chan os.Signal, 1)
+		signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
+		errc <- fmt.Errorf("%s", <-c)
+	}()
+
+	// HTTP transport.
 	go func() {
 		logger := log.With(logger, "transport", "HTTP")
 		logger.Log("addr", *httpAddr)
@@ -60,6 +72,7 @@ func main() {
 		errc <- http.ListenAndServe(*httpAddr, handler)
 	}()
 
+	// gRPC transport.
 	go func() {
 		logger := log.With(logger, "transport", "gRPC")
 		logger.Log("addr", *grpcAddr)
@@ -74,12 +87,6 @@ func main() {
 		s := grpc.NewServer()
 		proto.RegisterStringServer(s, srv)
 		errc <- s.Serve(ln)
-	}()
-
-	go func() {
-		c := make(chan os.Signal, 1)
-		signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
-		errc <- fmt.Errorf("%s", <-c)
 	}()
 
 	// Run!

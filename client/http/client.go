@@ -1,3 +1,4 @@
+// Package http provides a HTTP client for the string service.
 package http
 
 import (
@@ -8,6 +9,8 @@ import (
 	httptransport "github.com/go-kit/kit/transport/http"
 )
 
+// New returns StringService based on HTTP server at remote instance.
+// Instance is expected to come in "host:port" form.
 func New(instance string) stringsvc.StringService {
 	if !strings.HasPrefix(instance, "http") {
 		instance = "http://" + instance

@@ -19,6 +19,9 @@ type instrumentingMiddleware struct {
 	next           StringService
 }
 
+// NewInstrumentingMiddleware returns StringService middleware that instruments
+// the number of requests received, total duration of requests, number of chars removed
+// and result of each count method.
 func NewInstrumentingMiddleware(svc StringService) StringService {
 
 	fieldKeys := []string{"method", "error"}

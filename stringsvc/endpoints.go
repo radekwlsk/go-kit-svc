@@ -1,17 +1,24 @@
 package stringsvc
 
+// Methods to make individual endpoints from services,
+// request and response types to serve those endpoints.
+
 import (
 	"context"
 
 	"github.com/go-kit/kit/endpoint"
 )
 
+// Endpoints collects all endpoints that are required by StringService.
+// It's a helper struct to collect all of the endpoints into a single parameter.
 type Endpoints struct {
 	TitleCaseEndpoint        endpoint.Endpoint
 	RemoveWhitespaceEndpoint endpoint.Endpoint
 	CountEndpoint            endpoint.Endpoint
 }
 
+// MakeTitleCaseEndpoint returns an endpoint that invokes TitleCase on the StringService.
+// Useful in a server.
 func MakeTitleCaseEndpoint(svc StringService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(titleCaseRequest)
@@ -23,6 +30,9 @@ func MakeTitleCaseEndpoint(svc StringService) endpoint.Endpoint {
 	}
 }
 
+// MakeRemoveWhitespaceEndpoint returns an endpoint that invokes
+// RemoveWhitespace on the StringService.
+// Useful in a server.
 func MakeRemoveWhitespaceEndpoint(svc StringService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(removeWhitespaceRequest)
@@ -34,6 +44,8 @@ func MakeRemoveWhitespaceEndpoint(svc StringService) endpoint.Endpoint {
 	}
 }
 
+// MakeCountEndpoint returns an endpoint that invokes Count on the StringService.
+// Useful in a server.
 func MakeCountEndpoint(svc StringService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(countRequest)
@@ -42,6 +54,8 @@ func MakeCountEndpoint(svc StringService) endpoint.Endpoint {
 	}
 }
 
+// TitleCase implements StringService.
+// Useful in a client.
 func (e Endpoints) TitleCase(ctx context.Context, s string) (string, error) {
 	req := titleCaseRequest{S: s}
 	res, err := e.TitleCaseEndpoint(ctx, req)
@@ -51,6 +65,8 @@ func (e Endpoints) TitleCase(ctx context.Context, s string) (string, error) {
 	return res.(titleCaseResponse).V, nil
 }
 
+// RemoveWhitespace implements StringService.
+// Useful in a client.
 func (e Endpoints) RemoveWhitespace(ctx context.Context, s string) (string, error) {
 	req := removeWhitespaceRequest{S: s}
 	res, err := e.RemoveWhitespaceEndpoint(ctx, req)
@@ -60,6 +76,8 @@ func (e Endpoints) RemoveWhitespace(ctx context.Context, s string) (string, erro
 	return res.(removeWhitespaceResponse).V, nil
 }
 
+// Count implements StringService.
+// Useful in a client.
 func (e Endpoints) Count(ctx context.Context, s string) int {
 	req := countRequest{S: s}
 	res, err := e.CountEndpoint(ctx, req)

@@ -1,3 +1,4 @@
+// Package grpc provides a gRPC client for the string service.
 package grpc
 
 import (
@@ -7,7 +8,8 @@ import (
 	"google.golang.org/grpc"
 )
 
-// Return new stringgrpc service
+// New returns StringService based on gRPC client connection.
+// Caller have to dial and close the connection.
 func New(conn *grpc.ClientConn) stringsvc.StringService {
 	var titleCaseEndpoint = grpctransport.NewClient(
 		conn, "proto.String", "TitleCase",
